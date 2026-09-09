@@ -1,4 +1,4 @@
-# assembling cleaning + feature engineering steps into reusable preprocessing pipeline
+# assemble cleaning + feature engineering steps into reusable preprocessing pipeline
 
 from __future__ import annotations
 
