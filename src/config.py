@@ -12,3 +12,4 @@ PARAM_GRID = {
     "model__regressor__l1_ratio": [0.2, 0.5, 0.8],
 }
 MODEL_PATH = Path("model/model.bin")
+PREPROCESSING_PATH = Path("model/preprocessing.bin")
