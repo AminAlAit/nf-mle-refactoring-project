@@ -1,5 +1,29 @@
 # Refactoring Project
 
+## How we worked
+
+The three of us each did the whole project on our own branch instead of splitting
+it into quarters, so we all got to work through every part rather than a piece of
+it. Nothing is merged, and the branches are meant to be read side by side.
+
+| Branch | Who | What is on it |
+|---|---|---|
+| `amin-branch` | Amin | Cleaning, features, pipeline, modeling, FastAPI and Docker, 54 tests |
+| `niklas-branch` | Niklas | Cleaning, features, preprocessing pipeline, model training and evaluation |
+| `dasari-branch` | Dasari | Cleaning and feature engineering |
+
+```bash
+git switch amin-branch     # or niklas-branch, or dasari-branch
+```
+
+`main` stays exactly as the template shipped, so all three branches share the same
+starting point and can be compared against it with `git diff main..<branch>`.
+Nothing gets merged into it.
+
+The rest of this file is the original template.
+
+---
+
 Use this repository as a **template** for your refactoring project. It walks you through turning a working but messy notebook into clean, reusable Python code: the notebook analyzes King County house sales, and your job is to extract its data cleaning and feature engineering logic into a proper pipeline. Create pull requests in your own copy even if you are working alone, and use them to track your progress.
 
 ## Learning Objectives
