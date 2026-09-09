@@ -49,7 +49,7 @@ def split_features_and_target(
         tuple[pd.DataFrame, pd.Series]: A tuple containing the features DataFrame and the target Series.
     """
     
-    cols_to_drop = set(leakage_columns | {target_column, id_column})
+    cols_to_drop = set(leakage_columns) | {target_column, id_column}
     feature_cols = [c for c in df.columns if c not in cols_to_drop]
     
     return df[feature_cols], df[target_column]
@@ -162,7 +162,15 @@ if __name__ == "__main__":
     from src.persistence import save_model
     from src.pipeline import clean_raw_data
 
-    raw_df = load_raw_data()
+    print("Loading dataset.......")
+    try:
+        raw_df = load_raw_data('data/King_County_House_prices_dataset.csv')
+        print("Dataset loaded successfully!")
+    except FileNotFoundError:
+        print("Dataset not found. Please ensure the dataset is available at 'data/King_County_House_prices_dataset.csv'.")
+        exit(1)
+    
+    
     cleaned_df = clean_raw_data(raw_df)
     model, training_data, grid_search, fitted_preprocessing = train(cleaned_df)
 
