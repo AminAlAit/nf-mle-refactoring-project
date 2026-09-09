@@ -3,6 +3,37 @@
 import pandas as pd 
 import numpy as np
 
+from sklearn.base import BaseEstimator, TransformerMixin
+
+
+class WaterfrontDistanceAdder(BaseEstimator, TransformerMixin):
+    """
+    A custom transformer that calculates the distance from each house to the nearest waterfront house.
+    """
+
+    def fit(self, X: pd.DataFrame, y=None) -> "WaterfrontDistanceAdder":
+        waterfront_houses = X.loc[X["waterfront"] == 1, ["long", "lat"]]
+        self.reference_long_ = waterfront_houses["long"].to_numpy()
+        self.reference_lat_ = waterfront_houses["lat"].to_numpy()
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = X.copy()
+        if self.reference_long_.size == 0:
+            X["water_distance"] = np.nan
+            return X
+
+        # calculate geographic distance between two points using Haversine formula
+        delta_long = np.abs(X["long"].to_numpy()[:, None] - self.reference_long_[None, :])
+        delta_lat = np.abs(X["lat"].to_numpy()[:, None] - self.reference_lat_[None, :])
+        delta_long_corr = delta_long * np.cos(np.radians(self.reference_lat_[None, :]))
+        distances = (
+            (delta_long_corr**2 + delta_lat**2) ** 0.5 * 2 * np.pi * 6378 / 360
+        )
+        X["water_distance"] = distances.min(axis=1)
+        
+        return X
+
 def add_sqft_price(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add a new feature column 'sqft_price' to the DataFrame, which is calculated as:
@@ -46,58 +77,4 @@ def add_distance_to_center_of_wealth(df: pd.DataFrame, target_lat: float, target
         / 360
     )
 
-    return df
-
-def calc_haversine_distance(long, lat, ref_long, ref_lat):
-    """
-    Calculate the geographic distance between two points using the Haversine formula.
-    
-    Args:
-        long (float): Longitude of the first point.
-        lat (float): Latitude of the first point.
-        ref_long (float): Longitude of the reference point.
-        ref_lat (float): Latitude of the reference point.
-        
-    Returns:
-        float: The geographic distance between the two points in kilometers.
-    """
-    
-    delta_long = np.absolute(long - ref_long)
-    delta_lat = np.absolute(lat - ref_lat)
-    delta_long_corr = delta_long * np.cos(np.radians(ref_lat))
-    
-    distance = (
-        ((delta_long_corr) ** 2 + delta_lat ** 2) ** (1 / 2)
-        * 2
-        * np.pi
-        * 6378
-        / 360
-    )
-    
-    return distance
-
-def add_distance_to_waterfront_proxy(df: pd.DataFrame) -> pd.DataFrame:
-    
-    """
-    Add a new feature column that describes the geographic distance to the nearest waterfront house.
-    
-    Args:
-        df (pd.DataFrame): The input DataFrame.
-        
-    Returns:
-        pd.DataFrame: The DataFrame with the new feature column added.
-    """
-    
-    df_waterfront_houses = df.query('waterfront == 1')
-    
-    distances_to_waterfront_houses = []
-    
-    # TODO: vectorize!
-    for idx in df.index:
-        ref_list = []
-        for x, y in zip(list(df_waterfront_houses['long']), list(df_waterfront_houses['lat'])):
-            ref_list.append(calc_haversine_distance(df['long'][idx], df['lat'][idx], x, y).min())
-        distances_to_waterfront_houses.append(min(ref_list))
-    
-    df['water_distance'] = distances_to_waterfront_houses
     return df
