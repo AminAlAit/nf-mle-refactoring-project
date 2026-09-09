@@ -3,16 +3,34 @@ name = "mle-refactoring-project"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.141.1",
     "matplotlib>=3.11.1",
     "pandas>=3.0.5",
     "plotly>=7.0.0",
+    "psycopg[binary]>=3.3.5",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
     "scikit-learn>=1.9.0",
     "seaborn>=0.13.2",
     "skops>=0.14.0",
+    "sqlalchemy>=2.0.52",
+    "uvicorn>=0.52.4",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "ipykernel>=7.3.0",
     "nbformat>=5.11.1",
+    "pytest>=8.4.2",
 ]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# `kc` and `app` live at the repo root and are imported by path rather than
+# installed, so the root has to be on sys.path for the tests to find them.
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning"]

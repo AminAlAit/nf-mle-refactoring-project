@@ -171,3 +171,7 @@ Thumbs.db
 
 # Model files
 model/
+# --- Added for the refactoring project ---
+# Local SQLite database created when DB_CONN is unset.
+houses.db
+*.db-journal
