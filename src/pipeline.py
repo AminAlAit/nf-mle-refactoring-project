@@ -42,7 +42,6 @@ def build_preprocessing_pipeline() -> Pipeline:
     return Pipeline(
         [
             ("fix_missing_values", FunctionTransformer(fix_missing_values)),
-            ("sqft_price", FunctionTransformer(add_sqft_price)),
             (
                 "center_distance",
                 FunctionTransformer(
