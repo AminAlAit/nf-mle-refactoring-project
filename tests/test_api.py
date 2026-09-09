@@ -7,12 +7,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database_amin import Base, get_db
-from app.main_amin import app
-from kc.cleaning_amin import clean
-from kc.features_amin import add_sqft_price
-from kc.modeling_amin import split_dataset
-from kc.pipeline_amin import build_model_pipeline
+from app.database import Base, get_db
+from app.main import app
+from kc.cleaning import clean
+from kc.features import add_sqft_price
+from kc.modeling import split_dataset
+from kc.pipeline import build_model_pipeline
 
 VALID_HOUSE = {
     "bedrooms": 3,
@@ -126,15 +126,15 @@ def test_predict_returns_a_plausible_price(client, tmp_path, monkeypatch) -> Non
     """
     Train a small model, point the app at it, price a house.
     """
-    from kc.config_amin import RAW_DATA_PATH
+    from kc.config import RAW_DATA_PATH
 
     if not RAW_DATA_PATH.exists():
         pytest.skip("Dataset not available")
 
-    import app.main_amin as main_module
-    import kc.predict_amin as predict_module
-    from kc.data_amin import load_raw
-    from kc.modeling_amin import save_model
+    import app.main as main_module
+    import kc.predict as predict_module
+    from kc.data import load_raw
+    from kc.modeling import save_model
 
     prepared = add_sqft_price(clean(load_raw().sample(1200, random_state=3)))
     X_train, _, y_train, _ = split_dataset(prepared)
@@ -153,12 +153,12 @@ def test_predict_returns_a_plausible_price(client, tmp_path, monkeypatch) -> Non
 
 
 def test_predict_reports_a_missing_model(client, tmp_path, monkeypatch) -> None:
-    import app.main_amin as main_module
+    import app.main as main_module
 
     monkeypatch.setattr(main_module, "MODEL_PATH", tmp_path / "absent.bin")
     response = client.post("/predict", json=VALID_PREDICTION_INPUT)
     assert response.status_code == 503
-    assert "kc.train_amin" in response.json()["detail"]
+    assert "kc.train" in response.json()["detail"]
 
 
 def test_predict_rejects_an_out_of_range_house(client) -> None:
@@ -173,7 +173,7 @@ def test_predict_defaults_the_optional_fields(client) -> None:
     """
     waterfront, view and yr_renovated can be left out.
     """
-    from app.schemas_amin import PredictionRequest
+    from app.schemas import PredictionRequest
 
     request = PredictionRequest(**VALID_PREDICTION_INPUT)
     assert request.waterfront == 0

@@ -1,7 +1,7 @@
 """
 FastAPI app: CRUD over houses, plus /predict.
 
-    uv run uvicorn app.main_amin:app --reload
+    uv run uvicorn app.main:app --reload
     http://localhost:8000/docs
 """
 
@@ -12,10 +12,10 @@ from fastapi import Depends, FastAPI, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import models_amin, schemas_amin
-from app.database_amin import Base, engine, get_db
-from kc.config_amin import MODEL_PATH
-from kc.predict_amin import get_model, predict_price
+from app import models, schemas
+from app.database import Base, engine, get_db
+from kc.config import MODEL_PATH
+from kc.predict import get_model, predict_price
 
 
 @asynccontextmanager
@@ -40,11 +40,11 @@ app = FastAPI(
 DatabaseSession = Annotated[Session, Depends(get_db)]
 
 
-def get_house_or_404(db: Session, house_id: int) -> models_amin.House:
+def get_house_or_404(db: Session, house_id: int) -> models.House:
     """
     Fetch a house or 404.
     """
-    house = db.get(models_amin.House, house_id)
+    house = db.get(models.House, house_id)
     if house is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -61,16 +61,16 @@ def index() -> dict[str, str | bool]:
     return {"status": "ok", "model_available": MODEL_PATH.exists()}
 
 
-@app.get("/houses", response_model=list[schemas_amin.HouseOut], tags=["houses"])
-def list_houses(db: DatabaseSession) -> list[models_amin.House]:
+@app.get("/houses", response_model=list[schemas.HouseOut], tags=["houses"])
+def list_houses(db: DatabaseSession) -> list[models.House]:
     """
     All stored houses.
     """
-    return list(db.scalars(select(models_amin.House).order_by(models_amin.House.id)))
+    return list(db.scalars(select(models.House).order_by(models.House.id)))
 
 
-@app.get("/houses/{house_id}", response_model=schemas_amin.HouseOut, tags=["houses"])
-def read_house(house_id: int, db: DatabaseSession) -> models_amin.House:
+@app.get("/houses/{house_id}", response_model=schemas.HouseOut, tags=["houses"])
+def read_house(house_id: int, db: DatabaseSession) -> models.House:
     """
     One house.
     """
@@ -79,27 +79,27 @@ def read_house(house_id: int, db: DatabaseSession) -> models_amin.House:
 
 @app.post(
     "/houses",
-    response_model=schemas_amin.HouseOut,
+    response_model=schemas.HouseOut,
     status_code=status.HTTP_201_CREATED,
     tags=["houses"],
 )
 def create_house(
-    request: schemas_amin.HouseCreate, db: DatabaseSession
-) -> models_amin.House:
+    request: schemas.HouseCreate, db: DatabaseSession
+) -> models.House:
     """
     Store a new house.
     """
-    house = models_amin.House(**request.model_dump())
+    house = models.House(**request.model_dump())
     db.add(house)
     db.commit()
     db.refresh(house)
     return house
 
 
-@app.put("/houses/{house_id}", response_model=schemas_amin.HouseOut, tags=["houses"])
+@app.put("/houses/{house_id}", response_model=schemas.HouseOut, tags=["houses"])
 def update_house(
-    house_id: int, request: schemas_amin.HouseUpdate, db: DatabaseSession
-) -> models_amin.House:
+    house_id: int, request: schemas.HouseUpdate, db: DatabaseSession
+) -> models.House:
     """
     Replace a house's fields.
     """
@@ -124,8 +124,8 @@ def delete_house(house_id: int, db: DatabaseSession) -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.post("/predict", response_model=schemas_amin.PredictionResponse, tags=["model"])
-def predict(request: schemas_amin.PredictionRequest) -> schemas_amin.PredictionResponse:
+@app.post("/predict", response_model=schemas.PredictionResponse, tags=["model"])
+def predict(request: schemas.PredictionRequest) -> schemas.PredictionResponse:
     """
     Predict one house's sale price.
 
@@ -136,7 +136,7 @@ def predict(request: schemas_amin.PredictionRequest) -> schemas_amin.PredictionR
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=(
-                "No trained model available. Run `python -m kc.train_amin` to "
+                "No trained model available. Run `python -m kc.train` to "
                 f"create {MODEL_PATH.name}."
             ),
         )
@@ -149,4 +149,4 @@ def predict(request: schemas_amin.PredictionRequest) -> schemas_amin.PredictionR
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)
         ) from error
-    return schemas_amin.PredictionResponse(predicted_price=price)
+    return schemas.PredictionResponse(predicted_price=price)

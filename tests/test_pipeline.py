@@ -1,15 +1,15 @@
 """
-Tests for transformers_amin, pipeline_amin and modeling_amin.
+Tests for transformers, pipeline and modeling.
 """
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from kc.cleaning_amin import clean
-from kc.config_amin import EXCLUDED_FROM_MODEL
-from kc.features_amin import add_sqft_price
-from kc.modeling_amin import (
+from kc.cleaning import clean
+from kc.config import EXCLUDED_FROM_MODEL
+from kc.features import add_sqft_price
+from kc.modeling import (
     adjusted_r2,
     error_table,
     evaluate,
@@ -17,12 +17,12 @@ from kc.modeling_amin import (
     save_model,
     split_dataset,
 )
-from kc.pipeline_amin import (
+from kc.pipeline import (
     build_baseline_pipeline,
     build_feature_pipeline,
     build_model_pipeline,
 )
-from kc.transformers_amin import ColumnPruner, WaterDistance
+from kc.transformers import ColumnPruner, WaterDistance
 
 
 @pytest.fixture
@@ -166,5 +166,5 @@ def test_model_survives_a_save_and_load_round_trip(split, tmp_path) -> None:
 
 
 def test_load_model_reports_a_missing_file(tmp_path) -> None:
-    with pytest.raises(FileNotFoundError, match="kc.train_amin"):
+    with pytest.raises(FileNotFoundError, match="kc.train"):
         load_model(tmp_path / "absent.bin")

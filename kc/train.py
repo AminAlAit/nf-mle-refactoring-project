@@ -1,8 +1,8 @@
 """
 Train, tune, evaluate, save.
 
-    python -m kc.train_amin            full run with the grid search
-    python -m kc.train_amin --quick    skip the grid search
+    python -m kc.train            full run with the grid search
+    python -m kc.train --quick    skip the grid search
 """
 
 import argparse
@@ -11,18 +11,18 @@ import time
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 
-from kc.cleaning_amin import clean
-from kc.config_amin import CV_FOLDS, ELASTICNET_PARAM_GRID, METRICS_PATH, MODEL_PATH
-from kc.data_amin import load_raw
-from kc.features_amin import add_sqft_price
-from kc.modeling_amin import (
+from kc.cleaning import clean
+from kc.config import CV_FOLDS, ELASTICNET_PARAM_GRID, METRICS_PATH, MODEL_PATH
+from kc.data import load_raw
+from kc.features import add_sqft_price
+from kc.modeling import (
     error_table,
     evaluate,
     save_metrics,
     save_model,
     split_dataset,
 )
-from kc.pipeline_amin import build_baseline_pipeline, build_model_pipeline
+from kc.pipeline import build_baseline_pipeline, build_model_pipeline
 
 # The notebook's two baselines, cells 88 and 95.
 BASELINE_VARIABLES = [

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from kc.config_amin import RAW_DATA_PATH
+from kc.config import RAW_DATA_PATH
 
 # 454 rows have "?" in sqft_basement, which is why pandas reads it as text. Read it
 # as text on purpose and rebuild the numbers in cleaning.

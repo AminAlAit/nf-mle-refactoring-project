@@ -4,7 +4,7 @@ Request and response models.
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from kc.config_amin import MAX_PLAUSIBLE_BEDROOMS
+from kc.config import MAX_PLAUSIBLE_BEDROOMS
 
 
 class HouseBase(BaseModel):

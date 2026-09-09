@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kc.config_amin import RAW_DATA_PATH
-from kc.data_amin import load_raw
+from kc.config import RAW_DATA_PATH
+from kc.data import load_raw
 
 
 @pytest.fixture

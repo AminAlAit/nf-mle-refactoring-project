@@ -8,7 +8,7 @@ The notebook uses inplace=True, which means you can't re-run its cells.
 import numpy as np
 import pandas as pd
 
-from kc.config_amin import MAX_PLAUSIBLE_BEDROOMS, ZERO_FILLED_COLUMNS
+from kc.config import MAX_PLAUSIBLE_BEDROOMS, ZERO_FILLED_COLUMNS
 
 
 def drop_invalid_rows(

@@ -6,9 +6,9 @@ What I moved out of [King-County.ipynb](King-County.ipynb) and why.
 
 ```bash
 uv sync
-uv run pytest                              # 54 tests
-uv run python -m kc.train_amin             # saves model/model.bin
-uv run uvicorn app.main_amin:app --reload  # http://localhost:8000/docs
+uv run pytest                         # 54 tests
+uv run python -m kc.train             # saves model/model.bin
+uv run uvicorn app.main:app --reload  # http://localhost:8000/docs
 ```
 
 Or in Docker, which trains the model while building the image so `/predict` works
@@ -23,15 +23,15 @@ docker compose up --build --wait
 
 ```
 kc/
-  config_amin.py          constants
-  data_amin.py            loading the CSV            (cell 7)
-  cleaning_amin.py        data cleaning              (cells 26-43)
-  features_amin.py        the derived columns        (cells 56-70)
-  transformers_amin.py    sklearn wrappers
-  pipeline_amin.py        the pipelines              (cells 100-117)
-  modeling_amin.py        split, score, save, load   (cells 78-131)
-  train_amin.py           python -m kc.train_amin
-  predict_amin.py         scoring a new house
+  config.py          constants
+  data.py            loading the CSV            (cell 7)
+  cleaning.py        data cleaning              (cells 26-43)
+  features.py        the derived columns        (cells 56-70)
+  transformers.py    sklearn wrappers
+  pipeline.py        the pipelines              (cells 100-117)
+  modeling.py        split, score, save, load   (cells 78-131)
+  train.py           python -m kc.train
+  predict.py         scoring a new house
 app/                      FastAPI, CRUD plus /predict
 tests/                    54 tests
 King-County-refactored.ipynb
@@ -73,7 +73,7 @@ run both on 200 real rows and check they give identical results.
 
 ## Results
 
-From `python -m kc.train_amin`:
+From `python -m kc.train`:
 
 | Model | Features | Adjusted R2 | RMSE |
 |---|---|---|---|

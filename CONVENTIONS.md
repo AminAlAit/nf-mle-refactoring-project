@@ -22,17 +22,11 @@ def load_raw(path):
 Keep them short. One line usually, and plenty of functions need none. A docstring
 is for saying why something is odd, not repeating what the code says.
 
-## File naming
-
-My modules end in `_amin`. `kc/__init__.py`, `app/__init__.py` and
-`tests/conftest.py` keep their normal names because Python and pytest need those
-exact filenames.
-
 ## Commits
 
 One line, no body.
 
 ## Before claiming something works
 
-Run it. `uv run pytest`, `uv run python -m kc.train_amin`, or an actual request
+Run it. `uv run pytest`, `uv run python -m kc.train`, or an actual request
 against the API. A command exiting 0 is not the same as the thing working.

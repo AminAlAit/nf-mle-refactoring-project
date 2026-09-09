@@ -13,9 +13,9 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from kc.cleaning_amin import clean_rowwise
-from kc.config_amin import WEALTH_CENTER_LAT, WEALTH_CENTER_LONG
-from kc.features_amin import (
+from kc.cleaning import clean_rowwise
+from kc.config import WEALTH_CENTER_LAT, WEALTH_CENTER_LONG
+from kc.features import (
     add_center_distance,
     add_water_distance,
     waterfront_reference,

@@ -5,7 +5,7 @@ Feature engineering. Notebook cells 56-70.
 import numpy as np
 import pandas as pd
 
-from kc.config_amin import (
+from kc.config import (
     EARTH_RADIUS_KM,
     LON_CORRECTION_LAT,
     WEALTH_CENTER_LAT,
@@ -56,7 +56,7 @@ def add_center_distance(
     out["delta_lat"] = np.absolute(center_lat - out["lat"])
     out["delta_long"] = np.absolute(center_long - out["long"])
     # The notebook uses a fixed cos(LON_CORRECTION_LAT) here instead of calling
-    # dist(); see the note in config_amin about the two latitudes.
+    # dist(); see the note in config about the two latitudes.
     out["center_distance"] = (
         np.sqrt(
             (out["delta_long"] * np.cos(np.radians(LON_CORRECTION_LAT))) ** 2
@@ -79,7 +79,7 @@ def water_distance(long, lat, reference: np.ndarray) -> np.ndarray:
     Distance in km to the closest waterfront house. Cell 69.
 
     The notebook loops over 21,596 houses x 146 waterfront houses and takes minutes.
-    Same arithmetic, one broadcast, milliseconds. test_features_amin checks they match.
+    Same arithmetic, one broadcast, milliseconds. test_features checks they match.
     """
     if reference.size == 0:
         raise ValueError("No waterfront houses to measure against.")

@@ -25,10 +25,10 @@ COPY kc ./kc
 # with no prior local setup. The dataset is removed in the same layer so it does
 # not add 2.4 MB to the image.
 COPY data ./data
-RUN uv run --no-sync python -m kc.train_amin && rm -rf data
+RUN uv run --no-sync python -m kc.train && rm -rf data
 
 COPY app ./app
 
 EXPOSE 8000
 
-CMD ["uv", "run", "--no-sync", "uvicorn", "app.main_amin:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

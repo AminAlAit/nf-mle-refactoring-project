@@ -11,8 +11,8 @@ from sklearn.linear_model import ElasticNet, LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
-from kc.config_amin import EXCLUDED_FROM_MODEL, POLYNOMIAL_DEGREE
-from kc.transformers_amin import (
+from kc.config import EXCLUDED_FROM_MODEL, POLYNOMIAL_DEGREE
+from kc.transformers import (
     CenterDistance,
     ColumnPruner,
     RowwiseCleaner,

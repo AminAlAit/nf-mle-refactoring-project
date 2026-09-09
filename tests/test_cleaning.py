@@ -1,10 +1,10 @@
 """
-Tests for cleaning_amin.
+Tests for cleaning.
 """
 
 import pandas as pd
 
-from kc.cleaning_amin import (
+from kc.cleaning import (
     add_last_known_change,
     clean,
     clean_rowwise,

@@ -12,8 +12,8 @@ from typing import Any
 
 import pandas as pd
 
-from kc.config_amin import MODEL_PATH
-from kc.modeling_amin import load_model
+from kc.config import MODEL_PATH
+from kc.modeling import load_model
 
 REQUIRED_INPUT_COLUMNS = (
     "bedrooms",

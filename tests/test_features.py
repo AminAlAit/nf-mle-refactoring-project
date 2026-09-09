@@ -1,5 +1,5 @@
 """
-Tests for features_amin.
+Tests for features.
 
 The one that matters is test_fast_water_distance_matches_the_notebook_loop.
 Swapping a nested loop for a broadcast is the biggest change to the notebook's
@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kc.cleaning_amin import clean
-from kc.config_amin import WEALTH_CENTER_LAT, WEALTH_CENTER_LONG
-from kc.features_amin import (
+from kc.cleaning import clean
+from kc.config import WEALTH_CENTER_LAT, WEALTH_CENTER_LONG
+from kc.features import (
     add_center_distance,
     add_features,
     add_sqft_price,

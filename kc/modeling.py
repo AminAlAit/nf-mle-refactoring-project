@@ -12,7 +12,7 @@ from sklearn.base import BaseEstimator
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
-from kc.config_amin import METRICS_PATH, MODEL_PATH, RANDOM_STATE, TARGET, TEST_SIZE
+from kc.config import METRICS_PATH, MODEL_PATH, RANDOM_STATE, TARGET, TEST_SIZE
 
 
 def split_dataset(
@@ -135,7 +135,7 @@ def load_model(path: str | Path = MODEL_PATH, trusted: list[str] | None = None):
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(
-            f"No model at {path}. Run `python -m kc.train_amin` to create one."
+            f"No model at {path}. Run `python -m kc.train` to create one."
         )
     if trusted is None:
         trusted = sio.get_untrusted_types(file=path)

@@ -35,11 +35,11 @@ one of three. The template's original instructions are further down.
 
 ```bash
 uv sync
-uv run pytest                              # 54 tests
-uv run python -m kc.train_amin             # saves model/model.bin
-uv run uvicorn app.main_amin:app --reload  # http://localhost:8000/docs
+uv run pytest                         # 54 tests
+uv run python -m kc.train             # saves model/model.bin
+uv run uvicorn app.main:app --reload  # http://localhost:8000/docs
 
-cp .env.example .env                       # or run it all in Docker
+cp .env.example .env                  # or run it all in Docker
 docker compose up --build --wait
 ```
 

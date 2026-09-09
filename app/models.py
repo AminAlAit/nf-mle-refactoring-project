@@ -5,7 +5,7 @@ SQLAlchemy tables.
 from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database_amin import Base
+from app.database import Base
 
 
 class House(Base):
