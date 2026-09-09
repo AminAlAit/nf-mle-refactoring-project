@@ -19,6 +19,38 @@ By the end of this repository, you should be able to:
 | [**Project Brief**](project-for-today.md) | The assignment tasks and stretch goals. |
 | [**King County Notebook**](King-County.ipynb) | The original notebook: EDA, cleaning, feature engineering, and modeling for King County house prices. |
 
+## Our Solution
+
+> This section describes the completed work in this repository. The template's
+> original instructions follow below.
+
+| File / Folder | Description |
+|---|---|
+| [**REFACTORING.md**](REFACTORING.md) | What moved where, the decisions behind it, and two bugs found in the original. **Start here.** |
+| [**kc/**](kc/) | The refactored logic: cleaning, feature engineering, pipeline, modeling. |
+| [**app/**](app/) | FastAPI service: CRUD over houses plus a `/predict` endpoint. |
+| [**tests/**](tests/) | 54 tests covering all of the above. |
+| [**King-County-refactored.ipynb**](King-County-refactored.ipynb) | The analysis rewritten to use `kc/`. |
+| [**attempts/**](attempts/) | Teammates' solutions to the same parts, kept side by side. |
+
+```bash
+uv sync                                    # install
+uv run pytest                              # 54 tests, ~9s
+uv run python -m kc.train_amin             # train and save model/model.bin, ~8s
+uv run uvicorn app.main_amin:app --reload  # http://localhost:8000/docs
+
+cp .env.example .env                       # or run the whole stack in Docker
+docker compose up --build --wait
+```
+
+| Model | Features | Adjusted R² | RMSE |
+|---|---|---|---|
+| Linear, `grade` only | 1 | 0.432 | $274,288 |
+| Linear, `grade` + `last_known_change` | 2 | 0.480 | $262,320 |
+| ElasticNet, degree-2 polynomial | 209 | **0.840** | $143,443 |
+
+---
+
 ### Additional Folders and Files
 
 | File / Folder | Description |

@@ -1,0 +1,12 @@
+# The image needs locked dependency metadata, the two packages, and the dataset
+# (used once at build time to train the model, then deleted). Nothing else:
+# not the notebook, not the assets, not the local model or database files.
+**
+!pyproject.toml
+!uv.lock
+!kc/
+!kc/*.py
+!app/
+!app/*.py
+!data/
+!data/*.csv

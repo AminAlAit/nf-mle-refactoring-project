@@ -81,6 +81,18 @@ them. Three files keep plain names because the tooling demands it:
 | `kc/__init__.py`, `app/__init__.py` | Python needs this exact name for a package |
 | `tests/conftest.py` | pytest only discovers fixtures from this exact name |
 
+## Commit messages are one line
+
+A subject line and nothing else. No body, no bullets, no trailers.
+
+```
+right:  Add feature engineering and vectorise the water distance loop
+wrong:  the same thing followed by six paragraphs explaining it
+```
+
+Reasoning belongs in the code comments or in `REFACTORING.md`, where it stays
+readable. Amin writes the commits himself, so hand him exactly one line.
+
 ## Before saying something works
 
 Run it. `uv run pytest`, `uv run python -m kc.train_amin`, or an actual request
