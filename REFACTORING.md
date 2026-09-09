@@ -1,17 +1,18 @@
-# The Refactor
+# Notes on my refactor
 
-What moved out of [King-County.ipynb](King-County.ipynb), where it went, and why.
+What I moved out of [King-County.ipynb](King-County.ipynb) and why.
 
-## Quick start
+## Running it
 
 ```bash
-uv sync                                    # install
-uv run pytest                              # 54 tests, ~9s
-uv run python -m kc.train_amin             # trains and saves model/model.bin, ~8s
-uv run uvicorn app.main_amin:app --reload  # API on http://localhost:8000/docs
+uv sync
+uv run pytest                              # 54 tests
+uv run python -m kc.train_amin             # saves model/model.bin
+uv run uvicorn app.main_amin:app --reload  # http://localhost:8000/docs
 ```
 
-With Docker (trains the model during the image build, so `/predict` works immediately):
+Or in Docker, which trains the model while building the image so `/predict` works
+straight away:
 
 ```bash
 cp .env.example .env
@@ -20,113 +21,88 @@ docker compose up --build --wait
 
 ## Layout
 
-Every file of ours ends in `_amin` so a teammate's version of the same part can sit
-next to it. Three files keep their plain names because the tooling requires it:
-`kc/__init__.py`, `app/__init__.py` (Python) and `tests/conftest.py` (pytest).
-
 ```
-kc/                       the refactored logic
-  config_amin.py          every constant the notebook hardcoded inline
-  data_amin.py            reading the CSV                      (cell 7)
-  cleaning_amin.py        fixing the raw data                  (cells 26-43)
-  features_amin.py        the three derived columns            (cells 56-70)
-  transformers_amin.py    scikit-learn wrappers around both
-  pipeline_amin.py        the assembled pipelines              (cells 100-117)
-  modeling_amin.py        split, score, save, load             (cells 78-131)
-  train_amin.py           `python -m kc.train_amin`
-  predict_amin.py         loading a model and pricing a house
-app/                      FastAPI: CRUD over houses + /predict
+kc/
+  config_amin.py          constants
+  data_amin.py            loading the CSV            (cell 7)
+  cleaning_amin.py        data cleaning              (cells 26-43)
+  features_amin.py        the derived columns        (cells 56-70)
+  transformers_amin.py    sklearn wrappers
+  pipeline_amin.py        the pipelines              (cells 100-117)
+  modeling_amin.py        split, score, save, load   (cells 78-131)
+  train_amin.py           python -m kc.train_amin
+  predict_amin.py         scoring a new house
+app/                      FastAPI, CRUD plus /predict
 tests/                    54 tests
-King-County-refactored.ipynb   the analysis, using kc/
+King-County-refactored.ipynb
 ```
 
-The original notebook and `bonus_solution/` are untouched, so the before and after
-can be compared directly.
+I left the original notebook and `bonus_solution/` alone so the before and after
+can be compared.
 
-## The three decisions that shaped it
+## Three things I decided
 
-### 1. Cleaning is split by whether it drops rows
+**Cleaning is split in two.** `clean_rowwise` only changes values inside rows.
+`drop_invalid_rows` removes rows. They are separate because a step that drops rows
+cannot go inside a sklearn pipeline: X and y end up different lengths and nothing
+warns you. So row-dropping runs once before the split, and everything else lives
+inside the model, which means it also runs on API requests without me writing it
+twice.
 
-`clean_rowwise` only changes values inside existing rows. `drop_invalid_rows`
-removes them. They are separate because only the first is safe inside a
-scikit-learn pipeline. Dropping a row mid-pipeline leaves `X` and `y` misaligned
-with no error, and the model trains on mismatched pairs.
+**Nothing modifies its input.** The notebook uses `inplace=True` in cells 28 and
+43, so you cannot re-run it from the top. Every function here returns a new frame,
+and `clean(clean(df)) == clean(df)` is a test.
 
-So row-dropping runs once, before the split. Everything else lives inside the model
-and therefore also runs on incoming API requests, with no second implementation to
-keep in sync.
+**The saved model carries its own preprocessing.** `model/model.bin` is the whole
+pipeline. Give it a frame with the raw CSV columns and it gives back a price. That
+is why `/predict` can take plain house attributes instead of me reimplementing
+nineteen features in the API.
 
-### 2. Every function returns a new frame
+## Two bugs I found in the notebook
 
-The original uses `inplace=True` (cells 28, 43) and drops a row by its position in
-the file (`kc_data.drop(15856)`). Both make a cell destructive: re-running the
-notebook from the top after an edit deletes a *different* house, silently.
+**A data leak.** Cell 68 builds the waterfront list from the whole dataset and
+cell 69 uses it, both before the split in cell 82. So test rows help build a
+training feature. My `WaterDistance` learns that list in `fit`, from training rows
+only. It also has to work that way for the API, because one house on its own has
+no waterfront neighbours to measure against.
 
-Here nothing mutates its input, the 33-bedroom record is removed by the condition
-that makes it wrong, and `clean(clean(df)) == clean(df)` is a test.
-
-### 3. The saved model carries its own preprocessing
-
-`model/model.bin` is the entire pipeline: cleaning, feature engineering, column
-selection, polynomial expansion, scaling, and the estimator. Hand it a frame with
-the raw CSV columns and it returns a price.
-
-That is what allows `/predict` to accept plain house attributes. The alternative,
-re-implementing nineteen features in the serving code, is the standard way for
-training and serving to drift apart.
-
-## Two bugs found in the original
-
-**A data leak.** Cell 68 builds the waterfront reference list from the whole
-dataset, then cell 69 derives `water_distance` from it, before the train/test
-split in cell 82. Test rows therefore help shape a training feature.
-`transformers_amin.WaterDistance` learns the reference set in `fit`, so it sees training
-rows only. It also has to work this way for a different reason: a single house
-arriving at the API has no waterfront neighbours of its own to measure against.
-
-**A 400x slower loop than necessary.** Cell 69 nests a Python loop over the 146
-waterfront houses inside a loop over all 21,596 houses. `features_amin.water_distance`
-does the same arithmetic as one NumPy broadcast: 0.09s instead of roughly 70s.
-`tests/test_features_amin.py` runs the original loop against the new one on 200 real
-rows and asserts the results are *identical*, not merely close. The old
-implementation is kept in `features_amin.water_distance_naive` purely so that test can
-exist.
+**A very slow loop.** Cell 69 loops over 146 waterfront houses inside a loop over
+all 21,596 rows, which takes about 70 seconds. The same arithmetic as one NumPy
+broadcast takes 0.09s. I kept the old loop in `water_distance_naive` so a test can
+run both on 200 real rows and check they give identical results.
 
 ## Results
 
-Reproduced from `python -m kc.train_amin`:
+From `python -m kc.train_amin`:
 
-| Model | Features | Adjusted R² | RMSE |
+| Model | Features | Adjusted R2 | RMSE |
 |---|---|---|---|
-| Linear, `grade` only | 1 | 0.432 | $274,288 |
+| Linear, `grade` | 1 | 0.432 | $274,288 |
 | Linear, `grade` + `last_known_change` | 2 | 0.480 | $262,320 |
-| ElasticNet, degree-2 polynomial | 209 | **0.840** | $143,443 |
+| ElasticNet, degree 2 | 209 | 0.840 | $143,443 |
 
-The first two match the notebook's stated 43% and 48% (cells 91, 98). Best
-parameters found by grid search: `alpha=0.01`, `l1_ratio=0.2`.
+The first two match the 43% and 48% the notebook reports in cells 91 and 98. Grid
+search picked `alpha=0.01`, `l1_ratio=0.2`.
 
-The RMSE column is there on purpose. A model that explains 84% of the variance is
-still typically wrong by about $143,000, and only one of those two facts is useful
-when deciding what to bid.
+I kept RMSE next to R2 on purpose. The model explains 84% of the variance and is
+still usually off by about $143,000, and the second number is the one that matters
+if you are actually bidding on a house.
 
-## Things in the original worth knowing about
+## Other things I noticed
 
-- **The notebook contradicts itself about the target.** The code fits
-  `y = kc_data.price` (cell 81); the surrounding text says "variance in price per
-  square foot" three times (cells 91, 98). This refactor fits total price, matching
-  the code. Worth settling deliberately rather than by accident.
-- **`sqft_basement` has 454 `?` entries**, not one. The notebook's fix, recomputing
-  from `sqft_living - sqft_above`, handles all of them, but the prose
-  undersells the scale of the problem.
-- **The notebook's "almost 19 km" average water distance** (cell 72) does not match
-  its own code, which produces 5.5 km. The stored outputs were cleared, so the
-  figure cannot be checked against a real run; the loop in cell 69 and the
-  vectorised version here agree exactly, so 5.5 km is what that code computes.
-- **`zipcode` is treated as a number**, so the model can infer that 98104 sits
-  "between" 98103 and 98105. It is a label, and encoding it as one would likely help.
-- **`sqft_above + sqft_basement == sqft_living`** exactly, by construction. Three
-  perfectly dependent columns then go through a polynomial expansion.
-- **The centre-of-wealth formula uses two different latitudes**: it measures the
-  offset from 47.62774 but corrects longitude with cos(47.6219). The difference is
-  negligible (7e-5 relative), and `kc/config_amin.py` keeps the notebook's values so the
-  numbers stay comparable rather than silently "fixed".
+- The notebook disagrees with itself about the target. The code fits
+  `y = kc_data.price` in cell 81, but the text says "price per square foot" in
+  cells 91 and 98. I went with total price, matching the code.
+- `sqft_basement` has 454 `?` entries, not one. Recomputing it from
+  `sqft_living - sqft_above` handles them all, but the text makes the problem
+  sound smaller than it is.
+- Cell 72 says houses average almost 19 km from a waterfront house. Running the
+  notebook's own code gives 5.5 km. The outputs were cleared so I cannot check it
+  against a real run, but my version and the original loop agree exactly.
+- `zipcode` is used as a number, so the model can think 98104 sits between 98103
+  and 98105. It is a label. One-hot encoding it would probably help.
+- `sqft_above + sqft_basement` is exactly `sqft_living`, so three fully dependent
+  columns go into the polynomial expansion.
+- The centre-of-wealth formula measures the offset from 47.62774 but corrects
+  longitude with cos(47.6219). The gap is tiny so I kept the notebook's values
+  rather than quietly changing the numbers.
