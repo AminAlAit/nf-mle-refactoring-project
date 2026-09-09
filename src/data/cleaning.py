@@ -13,7 +13,7 @@ def drop_bad_bedroom_rows(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The DataFrame with invalid bedroom rows dropped.
     """
     
-    df = df[df['bedrooms'] >= 5]    # threshold based on perc75% (4.0)  # Keep rows with non-negative bedroom values
+    df = df[df['bedrooms'] <= 5]    # threshold based on perc75% (4.0)  # Keep rows with non-negative bedroom values
     return df
 
 def fix_sqft_basement(df: pd.DataFrame) -> pd.DataFrame:
@@ -74,8 +74,8 @@ def fix_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     df['waterfront'] = df['waterfront'].fillna(0)
     
     # fill missing 'yr_renovated' values (future work: should be pulled into helper function)
-    years_last_renovated = derive_last_renovation_year(df['yr_renovated'])
+    years_last_renovated = derive_last_renovation_year(df['yr_renovated'], df['yr_built'])
     df['last_known_change'] = years_last_renovated
-    df.drop(columns=['yr_renovated', 'yr_built'], axis=1, inplace=True)
+    df.drop(columns=['yr_renovated', 'yr_built'], inplace=True)
     
     return df

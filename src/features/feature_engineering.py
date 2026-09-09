@@ -13,7 +13,7 @@ def add_sqft_price(df: pd.DataFrame) -> pd.DataFrame:
         df (pd.DataFrame): The input DataFrame.
     """
     
-    df['sqft_price'] = df['price'] / (df['sqft_living'] + df['sqft_lot']).round(2)
+    df['sqft_price'] = (df['price'] / (df['sqft_living'] + df['sqft_lot'])).round(2)
     return df
 
 def add_distance_to_center_of_wealth(df: pd.DataFrame, target_lat: float, target_long: float) -> pd.DataFrame:
